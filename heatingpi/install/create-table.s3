@@ -1,0 +1,3 @@
+BEGIN;
+CREATE TABLE temps (tdate DATE, ttime TIME, zone TEXT, temperature NUMERIC);
+COMMIT;

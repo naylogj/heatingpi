@@ -1,0 +1,14 @@
+BEGIN;
+INSERT INTO temps values(date('now', '-1 day'), time('now'), "Hall", 19.6);
+INSERT INTO temps values(date('now', '-1 day'), time('now'), "Lounge", 18.6);
+INSERT INTO temps values(date('now', '-1 day'), time('now'), "Study", 21.3);
+INSERT INTO temps values(date('now', '-1 day'), time('now'), "Kitchen", 20.6);
+INSERT INTO temps values(date('now'), time('now', '-12 hours'), "Hall", 19.5);
+INSERT INTO temps values(date('now'), time('now', '-12 hours'), "Lounge", 21.1);
+INSERT INTO temps values(date('now'), time('now', '-12 hours'), "Study", 20.1);
+INSERT INTO temps values(date('now'), time('now', '-12 hours'), "Kitchen", 18.1);
+INSERT INTO temps values(date('now'), time('now'), "Hall", 21.2);
+INSERT INTO temps values(date('now'), time('now'), "Lounge", 21.2);
+INSERT INTO temps values(date('now'), time('now'), "Study", 19.1);
+INSERT INTO temps values(date('now'), time('now'), "Kitchen", 21.2);
+COMMIT;

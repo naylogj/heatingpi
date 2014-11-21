@@ -1,0 +1,106 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Home Temperature</title>
+
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<style type="text/css">
+${demo.css}
+		</style>
+		<script type="text/javascript">
+$(function () {
+    $('#container').highcharts({
+	chart: {
+		type:	'spline'
+	},
+        title: {
+            text: 'Daily Room Temperatures',
+            x: -20 //center
+        },
+        subtitle: {
+            text: 'Source: HeatPi',
+            x: -20
+        },
+        xAxis: {
+	    	type:  'datetime',
+		dateTimeLabelFormats: { 
+			month: '%e.  %b',
+			year: '%b'
+		},
+		title:  {
+			text: 'Date'
+			}			
+        },
+        yAxis: {
+            title: {
+                text: 'Temperature (°C)'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        tooltip: {
+            valueSuffix: '°C'
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle',
+            borderWidth: 0
+        },
+
+series: [
+{
+		name: 'Hall', 
+		data: [
+		[Date.UTC(2014, 11, 08, 12, 11, 32), 1], 
+		[Date.UTC(2014, 11, 08, 12, 11, 38), 1], 
+		[Date.UTC(2014, 11, 08, 12, 11, 43), 1], 
+		[Date.UTC(2014, 11, 08, 12, 11, 49), 1], 
+		[Date.UTC(2014, 11, 08, 12, 11, 55), 1], 
+]
+}, {
+		name: 'Lounge', 
+		data: [
+		[Date.UTC(2014, 11, 08, 12, 11, 32), 2], 
+		[Date.UTC(2014, 11, 08, 12, 11, 38), 2], 
+		[Date.UTC(2014, 11, 08, 12, 11, 44), 2], 
+		[Date.UTC(2014, 11, 08, 12, 11, 50), 2], 
+		[Date.UTC(2014, 11, 08, 12, 11, 56), 2], 
+]
+}, {
+		name: 'Study', 
+		data: [
+		[Date.UTC(2014, 11, 08, 12, 11, 33), 3], 
+		[Date.UTC(2014, 11, 08, 12, 11, 39), 3], 
+		[Date.UTC(2014, 11, 08, 12, 11, 44), 3], 
+		[Date.UTC(2014, 11, 08, 12, 11, 50), 3], 
+		[Date.UTC(2014, 11, 08, 12, 11, 56), 3], 
+]
+}, {
+		name: 'Kitchen', 
+		data: [
+		[Date.UTC(2014, 11, 08, 12, 11, 33), 4], 
+		[Date.UTC(2014, 11, 08, 12, 11, 39), 4], 
+		[Date.UTC(2014, 11, 08, 12, 11, 45), 4], 
+		[Date.UTC(2014, 11, 08, 12, 11, 51), 4], 
+		[Date.UTC(2014, 11, 08, 12, 11, 57), 4], 
+]
+}, 
+]
+
+    });
+});
+		</script>
+	</head>
+	<body>
+<script src="./js/highcharts.js"></script>
+<script src="./js/modules/exporting.js"></script>
+
+<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+	</body>
+</html>
