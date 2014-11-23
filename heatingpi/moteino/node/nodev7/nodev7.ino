@@ -17,7 +17,7 @@
 #define NETWORKID     204  //the same on all nodes that talk to each other
 #define GATEWAYID     1
 #define FREQUENCY   RF69_433MHZ
-#define ENCRYPTKEY    "CockRobinWood204" //exactly the same 16 characters/bytes on all nodes!
+#define ENCRYPTKEY    "16 Char String"" //exactly the same 16 characters/bytes on all nodes!
 #define ACK_TIME      100 // max # of ms to wait for an ack
 #define LED           9 // Moteinos have LEDs on D9
 #define DELAY 		900	// delay of 15 minutes expressed as seconds
