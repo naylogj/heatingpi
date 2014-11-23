@@ -3,12 +3,19 @@
 // It also looks for an onboard FLASH chip, if present
 // Library and code by Felix Rusu - felix@lowpowerlab.com
 // Get the RFM69 and SPIFlash library at: https://github.com/LowPowerLab/
+// V2 Gareth Naylor
+// Gateway Program with connected DALLAS DS18B20
+// temp sensor
 
 #include <RFM69.h>
 #include <SPI.h>
 #include <SPIFlash.h>
+#include <OneWire.h>
 
-#define NODEID        1    //unique for each node on same network
+#define ZONE  3        // study
+#define DEBUG 0        // set to 1 for additional serial port output
+#define TPIN 4             // Digital Pin4 PD4 D4 connected to DS18B20
+#define NODEID        0    //This is "0" because this is the GATEWAYID
 #define NETWORKID     204  //the same on all nodes that talk to each other
 //Match frequency to the hardware version of the radio on your Moteino (uncomment one):
 #define FREQUENCY     RF69_433MHZ
@@ -31,6 +38,12 @@ RFM69 radio;
 SPIFlash flash(FLASH_SS, 0xEF30); //EF30 for 4mbit  Windbond chip (W25X40CL)
 bool promiscuousMode = false; //set to 'true' to sniff all packets on the same network
 
+// One-wire setup
+OneWire ds(TPIN);
+float celsius;
+long temp;
+
+
 void setup() {
   Serial.begin(SERIAL_BAUD);
   delay(10);
@@ -42,31 +55,89 @@ void setup() {
   radio.promiscuous(promiscuousMode);
   char buff[50];
   sprintf(buff, "\nListening at %d Mhz...", FREQUENCY==RF69_433MHZ ? 433 : FREQUENCY==RF69_868MHZ ? 868 : 915);
-  Serial.println(buff);
+  if (DEBUG) Serial.println(buff);
   if (flash.initialize())
   {
-    Serial.print("SPI Flash Init OK ... UniqueID (MAC): ");
+    if (DEBUG) Serial.print("SPI Flash Init OK ... UniqueID (MAC): ");
     flash.readUniqueId();
     for (byte i=0;i<8;i++)
     {
-      Serial.print(flash.UNIQUEID[i], HEX);
-      Serial.print(' ');
-    }
-
-    //alternative way to read it:
-    //byte* MAC = flash.readUniqueId();
-    //for (byte i=0;i<8;i++)
-    //{
-    //  Serial.print(MAC[i], HEX);
-    //  Serial.print(' ');
-    //}
+      if (DEBUG) Serial.print(flash.UNIQUEID[i], HEX);
+      if (DEBUG) Serial.print(' ');
+    } 
   }
   else
-    Serial.println("SPI Flash Init FAIL! (is chip present?)");
+    if (DEBUG) Serial.println("SPI Flash Init FAIL! (is chip present?)");
 }
 
 byte ackCount=0;
 void loop() {
+  
+// OneWire variables
+byte i;
+byte present = 0;
+byte type_s;
+byte data[12];
+byte addr[8];
+  
+// Check for an attached DS18B20 device
+// if none found return
+if ( !ds.search(addr)) {
+  if (DEBUG) Serial.println("No more addresses.");
+  Serial.println();
+  ds.reset_search();
+  delay(250);
+  return;
+  }
+ 
+// Use One Wire Bus to read the temperature
+ds.reset();
+ds.select(addr);
+ds.write(0x44, 1);        // start conversion, with parasite power on at the end
+  
+delay(1000);     // maybe 750ms is enough, maybe not
+  
+present = ds.reset();
+ds.select(addr);    
+ds.write(0xBE);         // Read Scratchpad
+
+if (DEBUG) Serial.print("  Data = ");
+if (DEBUG) Serial.print(present, HEX);
+if (DEBUG) Serial.print(" ");
+for ( i = 0; i < 9; i++) {           // we need 9 bytes
+  data[i] = ds.read();
+  if (DEBUG) Serial.print(data[i], HEX);
+  if (DEBUG) Serial.print(" ");
+  }
+  if (DEBUG) Serial.print(" CRC=");
+  if (DEBUG) Serial.print(OneWire::crc8(data, 8), HEX);
+  if (DEBUG) Serial.println();
+
+// Convert the data to actual temperature
+int16_t raw = (data[1] << 8) | data[0];
+if (type_s) {
+  raw = raw << 3; // 9 bit resolution default
+    if (data[7] == 0x10) {
+    // "count remain" gives full 12 bit resolution
+      raw = (raw & 0xFFF0) + 12 - data[6];
+    }
+ } else {
+    byte cfg = (data[4] & 0x60);
+    // at lower res, the low bits are undefined, so let's zero them
+    if (cfg == 0x00) raw = raw & ~7;  // 9 bit resolution, 93.75 ms
+      else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
+      else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
+      // default is 12 bit resolution, 750 ms conversion time
+ }
+  celsius = (float)raw / 16.0;
+ // celsius = celsius*100;
+  temp = long(celsius);
+  Serial.println();
+  if (DEBUG) Serial.print("Temperature is ");
+  Serial.print(ZONE);
+  Serial.print(":");
+  Serial.print(celsius);
+  
   //process any serial input
   if (Serial.available() > 0)
   {
@@ -77,32 +148,7 @@ void loop() {
       radio.encrypt(ENCRYPTKEY);
     if (input == 'e') //e=disable encryption
       radio.encrypt(null);
-    if (input == 'p')
-    {
-      promiscuousMode = !promiscuousMode;
-      radio.promiscuous(promiscuousMode);
-      Serial.print("Promiscuous mode ");Serial.println(promiscuousMode ? "on" : "off");
-    }
-    
-    if (input == 'd') //d=dump flash area
-    {
-      Serial.println("Flash content:");
-      int counter = 0;
-
-      while(counter<=256){
-        Serial.print(flash.readByte(counter++), HEX);
-        Serial.print('.');
-      }
-      while(flash.busy());
-      Serial.println();
-    }
-    if (input == 'D')
-    {
-      Serial.print("Deleting Flash chip ... ");
-      flash.chipErase();
-      while(flash.busy());
-      Serial.println("DONE");
-    }
+        
     if (input == 'i')
     {
       Serial.print("DeviceID: ");
@@ -123,34 +169,33 @@ void loop() {
 
   if (radio.receiveDone())
   {
-    Serial.print('[');Serial.print(radio.SENDERID, DEC);Serial.print("] ");
-    if (promiscuousMode)
-    {
-      Serial.print("to [");Serial.print(radio.TARGETID, DEC);Serial.print("] ");
-    }
+    // Send recieved data up to the Pi on the serial Port.
+    if (DEBUG) Serial.print('[');Serial.print(radio.SENDERID, DEC);Serial.print("] ");
+   
     for (byte i = 0; i < radio.DATALEN; i++)
       Serial.print((char)radio.DATA[i]);
-    Serial.print("   [RX_RSSI:");Serial.print(radio.RSSI);Serial.print("]");
+    
+    if (DEBUG) Serial.print("   [RX_RSSI:");Serial.print(radio.RSSI);Serial.print("]");
     
     if (radio.ACKRequested())
     {
       byte theNodeID = radio.SENDERID;
       radio.sendACK();
-      Serial.print(" - ACK sent.");
+      if (DEBUG) Serial.print(" - ACK sent.");
 
       // When a node requests an ACK, respond to the ACK
       // and also send a packet requesting an ACK (every 3rd one only)
       // This way both TX/RX NODE functions are tested on 1 end at the GATEWAY
-      if (ackCount++%3==0)
-      {
-        Serial.print(" Pinging node ");
-        Serial.print(theNodeID);
-        Serial.print(" - ACK...");
-        delay(3); //need this when sending right after reception .. ?
-        if (radio.sendWithRetry(theNodeID, "ACK TEST", 8, 0))  // 0 = only 1 attempt, no retries
-          Serial.print("ok!");
-        else Serial.print("nothing");
-      }
+      //if (ackCount++%3==0)
+      //{
+       // Serial.print(" Pinging node ");
+        //Serial.print(theNodeID);
+        //Serial.print(" - ACK...");
+        //delay(3); //need this when sending right after reception .. ?
+        //if (radio.sendWithRetry(theNodeID, "ACK TEST", 8, 0))  // 0 = only 1 attempt, no retries
+          //Serial.print("ok!");
+        //else Serial.print("nothing");
+      //}
     }
     Serial.println();
     Blink(LED,3);

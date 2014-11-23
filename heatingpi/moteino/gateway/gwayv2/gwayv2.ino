@@ -21,7 +21,7 @@
 #define FREQUENCY     RF69_433MHZ
 //#define FREQUENCY     RF69_868MHZ
 //#define FREQUENCY     RF69_915MHZ
-#define ENCRYPTKEY    "CockRobinWood204" //exactly the same 16 characters/bytes on all nodes!
+#define ENCRYPTKEY    "16 Char String" //exactly the same 16 characters/bytes on all nodes!
 //#define IS_RFM69HW    //uncomment only for RFM69HW! Leave out if you have RFM69W!
 #define ACK_TIME      30 // max # of ms to wait for an ack
 #define SERIAL_BAUD   115200
