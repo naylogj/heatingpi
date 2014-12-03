@@ -34,7 +34,7 @@
 #define NODEID        0                  // this is "0" because this is the GATEWAY moteino
 #define NETWORKID     204                // the same on all nodes that talk to each other
 #define FREQUENCY     RF69_433MHZ        // Transmit Frequency for UK
-#define ENCRYPTKEY    "16 Char String" // exactly the same 16 characters/bytes on all nodes!
+#define ENCRYPTKEY    "CockRobinWood204" // exactly the same 16 characters/bytes on all nodes!
 #define ACK_TIME      30                 // max # of ms to wait for an ack
 #define SERIAL_BAUD   115200             // baud rate on serial port.
 #define LED           9                  // Moteinos have LEDs on D9
@@ -117,13 +117,15 @@ void loop() {
 
   if (radio.receiveDone())
   {
-    // Send recieved data up to the Pi on the serial Port.
-    if (DEBUG) Serial.print('[');Serial.print(radio.SENDERID, DEC);Serial.print("] ");
-   
-    for (byte i = 0; i < radio.DATALEN; i++)
-      Serial.print((char)radio.DATA[i]);
+    // Send recieved data up to the Pi on the serial Port. 
+    //for (byte i = 0; i < radio.DATALEN; i++)
+    //  Serial.print((char)radio.DATA[i]);
     
-    if (DEBUG) Serial.print("   [RX_RSSI:");Serial.print(radio.RSSI);Serial.print("]");
+   for (byte i = 0; i < radio.DATALEN; i++)
+     Serial.print((char)radio.DATA[i]);
+    
+    
+    //if (DEBUG) Serial.print("   [RX_RSSI:");Serial.print(radio.RSSI);Serial.print("]");
     
     if (radio.ACKRequested())                // Ensure an Ack is sent back to sender
     {
