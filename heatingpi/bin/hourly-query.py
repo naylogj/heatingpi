@@ -58,12 +58,16 @@ for zone in ('Hall','Lounge','Study','Kitchen'):
 	for row in curs.execute("SELECT tdate, ttime, temperature FROM temps WHERE tdate=date('now') AND zone=(?)",(zone,)):
 
 		# date format is 1970-11-01 need 1970, 11, 01
+		# need to subtract 1 from the month because of HighCharts
 		# time format is 13:11:01 need 1970, 11, 01
-		ddate=str(row[0]).replace("-",", ")
+		# ddate=str(row[0]).replace("-",", ")
+		ddate=str(row[0]).split('-')
+		m = int(ddate[1])-1
+		ddates = ddate[0] + ", " + str(m) + ", " + ddate[2]
 		dtime=str(row[1]).replace(":",", ")
 		html_file.write("\t\t[")
 		html_file.write("Date.UTC(")
-		html_file.write(ddate)
+		html_file.write(ddates)
 		html_file.write(", ")
 		html_file.write(dtime)
 		html_file.write("), ")
