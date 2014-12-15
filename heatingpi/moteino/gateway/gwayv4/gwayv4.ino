@@ -34,7 +34,7 @@
 #define NODEID        0                  // this is "0" because this is the GATEWAY moteino
 #define NETWORKID     204                // the same on all nodes that talk to each other
 #define FREQUENCY     RF69_433MHZ        // Transmit Frequency for UK
-#define ENCRYPTKEY    "CockRobinWood204" // exactly the same 16 characters/bytes on all nodes!
+#define ENCRYPTKEY    "16 char String"   // exactly the same 16 characters/bytes on all nodes!
 #define ACK_TIME      30                 // max # of ms to wait for an ack
 #define SERIAL_BAUD   115200             // baud rate on serial port.
 #define LED           9                  // Moteinos have LEDs on D9
