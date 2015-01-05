@@ -12,7 +12,7 @@
 #include <SPIFlash.h>
 #include <LowPower.h>
 
-#define OFFSET 5       // offset in degrees to normalise temp sensor
+#define OFFSET -1       // offset in degrees to normalise temp sensor
 
 #define ZONE  1        // Hall
 #define DEBUG 0        // set to 1 for additional serial port output
@@ -94,7 +94,7 @@ void loop() {
   // format nodeid:temp
   // and set sendSize to the correct (non zero) value?
 
-  sprintf(payload,"%d:%.4d",NODEID,celcius);
+  sprintf(payload,"%d:%.4d",ZONE,celcius);
   sendSize=sizeof(payload);
   
   if (DEBUG) Serial.print("Payload is: ");
